@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import type { Counts } from './exercises.ts';
-import { DAYS, dayIndex, dayKey, dayState, prevKey, streak, target } from './plan.ts';
+import { DAYS, dayIndex, dayKey, dayState, shiftKey, streak, target, timeline } from './plan.ts';
 
 const all = (n: number): Counts => ({ pushup: n, situp: n, squat: n });
 
@@ -15,7 +15,8 @@ test('plan ramps 10 → 100 and never goes down', () => {
 
 test('day keys are local dates and day math ignores DST', () => {
   assert.equal(dayKey(new Date(2026, 0, 5, 23, 59)), '2026-01-05');
-  assert.equal(prevKey('2026-03-01'), '2026-02-28');
+  assert.equal(shiftKey('2026-03-01', -1), '2026-02-28');
+  assert.equal(shiftKey('2026-12-31', 1), '2027-01-01');
   assert.equal(dayIndex('2026-03-28', '2026-03-30'), 3);
   assert.equal(dayIndex('2026-10-24', '2026-10-26'), 3);
   assert.equal(dayIndex('2026-05-02', '2026-05-01'), 1);
@@ -35,4 +36,6 @@ test('streak counts done days back from today, or from yesterday while today is 
   assert.equal(streak({ ...days, '2026-11-05': all(10) }, '2026-11-04', '2026-11-07'), 1);
   assert.equal(streak(days, '2026-11-04', '2026-11-08'), 0);
   assert.equal(streak({}, null, '2026-11-07'), 0);
+  assert.deepEqual(timeline(days, '2026-11-04', '2026-11-07').slice(0, 5), ['done', 'done', 'done', 'today', 'ahead']);
+  assert.equal(timeline({}, null, '2026-11-07')[0], 'today');
 });
