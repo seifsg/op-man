@@ -39,5 +39,10 @@ class OpProximityModule : Module() {
     OnStopObserving("onChange") {
       manager?.unregisterListener(listener)
     }
+
+    // A JS reload can tear the module down without a stop: never leave the sensor running.
+    OnDestroy {
+      manager?.unregisterListener(listener)
+    }
   }
 }

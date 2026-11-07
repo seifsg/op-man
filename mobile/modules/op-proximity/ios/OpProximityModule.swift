@@ -27,6 +27,11 @@ public class OpProximityModule: Module {
     OnStopObserving("onChange") {
       DispatchQueue.main.async { self.stop() }
     }
+
+    // A JS reload can tear the module down without a stop: never leave monitoring on.
+    OnDestroy {
+      DispatchQueue.main.async { self.stop() }
+    }
   }
 
   private func start() {
