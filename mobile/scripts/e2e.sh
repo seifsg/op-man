@@ -7,20 +7,39 @@ mkdir -p "$out"
 
 shot() { sleep "${2:-1}"; adb exec-out screencap -p > "$out/$1.png"; }
 open() { adb shell am start -W -a android.intent.action.VIEW -d "opman://$1" "$pkg" > /dev/null; }
-ui() { adb shell uiautomator dump /sdcard/ui.xml > /dev/null && adb exec-out cat /sdcard/ui.xml; }
+
+# Center "x y" of the element showing text $2 in UI dump $1, or nothing.
+center() {
+  grep -o "text=\"$2\"[^>]*bounds=\"\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]\"" <<< "$1" | head -1 \
+    | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/' \
+    | awk '{ print int(($1 + $3) / 2), int(($2 + $4) / 2) }'
+}
+
+# The current UI dump. A cold emulator can pop "<app> isn't responding" over the app: answer Wait, look again.
+ui() {
+  local x=''
+  for _ in 1 2 3 4 5; do
+    adb shell uiautomator dump /sdcard/ui.xml > /dev/null && x=$(adb exec-out cat /sdcard/ui.xml)
+    grep -q "isn't responding" <<< "$x" || break
+    adb shell input tap $(center "$x" Wait)
+    sleep 2
+  done
+  printf '%s' "$x"
+}
 
 # Taps the element showing text $1, found in a UI dump: no hard-coded coordinates.
 tap() {
-  local b
-  b=$(ui | grep -o "text=\"$1\"[^>]*bounds=\"\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]\"" | head -1 \
-    | sed 's/.*bounds="\[\([0-9]*\),\([0-9]*\)\]\[\([0-9]*\),\([0-9]*\)\]"/\1 \2 \3 \4/')
-  [ -n "$b" ] || { echo "FAIL: no element with text '$1'" >&2; exit 1; }
-  set -- $b
-  adb shell input tap $(( ($1 + $3) / 2 )) $(( ($2 + $4) / 2 ))
+  local p
+  p=$(center "$(ui)" "$1")
+  [ -n "$p" ] || { echo "FAIL: no element with text '$1'" >&2; exit 1; }
+  adb shell input tap $p
 }
 
 # Fails the run unless the screen shows text $1.
-expect() { ui | grep -q "text=\"$1\"" || { echo "FAIL: expected '$1' on screen" >&2; shot "fail-$(date +%s)" 0; exit 1; }; echo "ok: $1"; }
+expect() {
+  ui | grep -q "text=\"$1\"" || { echo "FAIL: expected '$1' on screen" >&2; shot "fail-$(date +%s)" 0; exit 1; }
+  echo "ok: $1"
+}
 
 accel() { adb emu sensor set acceleration "$1:$2:$3" > /dev/null; }
 near() { adb emu sensor set proximity "$1" > /dev/null; }
@@ -44,6 +63,10 @@ situp() {
 }
 
 adb install -r "$apk"
+# Let the cold launcher settle, then dark mode: the app's Night Gym look.
+adb shell input keyevent KEYCODE_HOME
+sleep 20
+adb shell cmd uimode night yes
 near 10
 accel 0 9.81 0
 adb shell am start -W -n "$pkg/.MainActivity" > /dev/null

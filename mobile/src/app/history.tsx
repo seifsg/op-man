@@ -50,6 +50,16 @@ export default function History() {
           </View>
           <DayGrid cells={cells} width={width - 40} t={t} />
           <Text style={[label, { color: t.dim, marginTop: 6 }]}>{rows.length ? 'EVERY DAY' : 'NO REPS YET. YOUR FIRST SET STARTS DAY 1.'}</Text>
+          {rows.length > 0 && (
+            <View style={s.legend}>
+              {EXERCISES.map((ex) => (
+                <View key={ex.id} style={s.key}>
+                  <View style={[s.dot, { backgroundColor: ex.color }]} />
+                  <Text style={{ color: t.dim, fontSize: 13, fontWeight: '700' }}>{ex.name}</Text>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       }
       renderItem={({ item }) => <DayRow row={item} t={t} />}
@@ -105,4 +115,7 @@ const styles = (t: Theme) =>
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 44 },
     stats: { flexDirection: 'row' },
     restart: { alignItems: 'center', padding: 20 },
+    legend: { flexDirection: 'row', gap: 16, marginTop: -6 },
+    key: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    dot: { width: 8, height: 8, borderRadius: 4 },
   });
