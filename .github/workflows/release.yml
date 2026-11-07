@@ -1,16 +1,22 @@
 name: Release
 
-# Pushing a version tag (v1.2.3) builds the APK and attaches it as op-man.apk to that tag's GitHub Release,
-# which is where the landing page's button (releases/latest/download/op-man.apk) downloads it from.
+# Pushing a version tag (v1.2.3) builds the APK, signs it with the owner's release key and attaches it as
+# op-man.apk to that tag's GitHub Release, where the landing page's button (releases/latest/download/op-man.apk)
+# downloads it from. Only plain vX.Y.Z tags release; other tags never replace the public download.
 on:
   push:
-    tags: ['v*']
+    tags: ['v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
 
 jobs:
   android:
     uses: ./.github/workflows/android-apk.yml
     with:
       version: ${{ github.ref_name }}
+      signed: true
+    secrets: inherit
 
   publish:
     needs: android
