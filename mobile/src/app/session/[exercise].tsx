@@ -117,7 +117,7 @@ function Session({ ex }: { ex: Exercise }) {
 const tipText = (ex: Exercise, tapMode: boolean, phase: Phase, stalled: boolean): string => {
   const sensor = ex.sensor === 'proximity' ? 'proximity sensor' : 'motion sensor';
   if (tapMode) return `This phone has no ${sensor} the app can read. Tap the ring to count each rep.`;
-  if (stalled) return 'No rep picked up for a while. Check the phone is placed as at the start, or tap + to count.';
+  if (stalled) return 'No rep picked up for a while. Check the phone is placed as shown at the start, or tap + to count.';
   if (phase !== 'live') return ex.tip;
   return ex.sensor === 'proximity' ? 'Counting. Bring your nose close to the phone on every rep.' : 'Counting. Keep the phone steady against you.';
 };
