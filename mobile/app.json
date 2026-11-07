@@ -26,7 +26,23 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite"
-    ]
+      "expo-sqlite",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "OP Man reads motion to count your squats and sit-ups. Nothing leaves your phone."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0B0F"
+        }
+      ]
+    ],
+    "backgroundColor": "#0B0B0F"
   }
 }
