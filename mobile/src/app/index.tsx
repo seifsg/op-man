@@ -35,9 +35,9 @@ export default function Home() {
 
       <View style={s.hero}>
         <Text style={[label, { color: t.dim }]}>{over ? 'CHALLENGE COMPLETE' : doneToday ? 'TODAY DONE' : 'TODAY'}</Text>
-        <Text style={[numeral, s.day]}>
+        <Text style={[numeral, s.day]} numberOfLines={1} adjustsFontSizeToFit>
           DAY {Math.min(day, DAYS)}
-          <Text style={{ color: t.dim }}> / {DAYS}</Text>
+          <Text style={{ color: t.dim, fontSize: 30 }}> / {DAYS}</Text>
         </Text>
         <View style={s.bar}>
           <View style={[s.fill, { width: `${(Math.min(day, DAYS) / DAYS) * 100}%` }]} />
@@ -83,7 +83,7 @@ const styles = (t: Theme) =>
     top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
     chip: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, height: 34, borderRadius: 17, backgroundColor: t.card, borderWidth: 1, borderColor: t.line },
     hero: { paddingVertical: 18, gap: 8 },
-    day: { color: t.text, fontSize: 56, lineHeight: 62 },
+    day: { color: t.text, fontSize: 56, lineHeight: 64 },
     bar: { height: 6, borderRadius: 3, backgroundColor: t.track, overflow: 'hidden' },
     fill: { height: 6, borderRadius: 3, backgroundColor: t.accent },
     sub: { color: t.dim, fontSize: 15, marginTop: 4 },
