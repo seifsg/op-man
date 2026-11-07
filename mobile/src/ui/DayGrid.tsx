@@ -15,7 +15,7 @@ export function DayGrid({ cells, today, width, t }: { cells: readonly Cell[]; to
       {cells.map((c, i) => (
         <View
           key={i}
-          style={[{ width: size, height: size, borderRadius: size / 4 }, look(c, t), i === today && { borderWidth: 2, borderColor: t.text, opacity: 1 }]}
+          style={[{ width: size, height: size, borderRadius: size / 4 }, look(c, t), i === today && { borderWidth: 2, borderColor: t.text }]}
         />
       ))}
     </View>
@@ -28,7 +28,8 @@ const look = (c: Cell, t: Theme) => {
     case 'done':
       return { backgroundColor: t.accent };
     case 'partial':
-      return { backgroundColor: t.accent, opacity: 0.35 };
+      // 35% fill as color alpha (not opacity), so the today ring drawn on top stays fully visible.
+      return { backgroundColor: `${t.accent}59` };
     case 'missed':
       return { borderWidth: 1.5, borderColor: t.dim };
     case 'ahead':
