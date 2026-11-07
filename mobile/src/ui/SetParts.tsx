@@ -37,7 +37,8 @@ type RingProps = {
 /** The big ring: countdown while getting in position, then the count with how many reps are left. */
 export function RepRing({ ex, size, count, goal, countdown, pop, onTap, t }: RingProps) {
   const done = count >= goal;
-  const big = [numeral, { fontSize: size * 0.48, lineHeight: size * 0.56 }];
+  // Half the ring: 168 pt or more on a 360 dp phone, readable from the floor.
+  const big = [numeral, { fontSize: size * 0.5, lineHeight: size * 0.58 }];
   return (
     <Pressable
       disabled={!onTap}

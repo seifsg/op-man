@@ -15,7 +15,7 @@ import { useToday } from '../../ui/useToday';
 
 type Phase = 'idle' | 'countdown' | 'live';
 
-// No rep for this long while counting: hint at placement and the +1 button.
+// No rep for this long while still short of the target: hint at placement and the +1 button.
 const STALL_MS = 12_000;
 
 /** Route /session/:exercise; unknown ids go home. */
@@ -31,7 +31,7 @@ function Session({ ex }: { ex: Exercise }) {
   useKeepAwake(undefined, { suppressDeactivateWarnings: true });
   const t = useTheme();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const reduceMotion = useReduceMotion();
   const { start, days } = useProgress();
   const today = useToday();
@@ -80,13 +80,13 @@ function Session({ ex }: { ex: Exercise }) {
     return () => clearTimeout(id);
   }, [phase, seconds]);
 
-  // Every rep restarts the stall clock; no reps for STALL_MS while live shows a placement hint.
+  // Every rep restarts the stall clock; no rep for STALL_MS while live and short of the target shows a hint.
   useEffect(() => {
     setStalled(false);
-    if (phase !== 'live' || tapMode) return;
+    if (phase !== 'live' || tapMode || count >= goal) return;
     const id = setTimeout(() => setStalled(true), STALL_MS);
     return () => clearTimeout(id);
-  }, [phase, count, tapMode]);
+  }, [phase, count, goal, tapMode]);
 
   const begin = () => {
     setSeconds(ex.sensor === 'proximity' ? 5 : 3);
@@ -100,7 +100,7 @@ function Session({ ex }: { ex: Exercise }) {
       <Text style={s.tip}>{tipText(ex, tapMode, phase, stalled)}</Text>
       <RepRing
         ex={ex}
-        size={Math.min(width - 32, 440)}
+        size={Math.min(width - 24, height * 0.5, 440)}
         count={count}
         goal={goal}
         countdown={phase === 'countdown' ? seconds : null}
@@ -117,7 +117,7 @@ function Session({ ex }: { ex: Exercise }) {
 const tipText = (ex: Exercise, tapMode: boolean, phase: Phase, stalled: boolean): string => {
   const sensor = ex.sensor === 'proximity' ? 'proximity sensor' : 'motion sensor';
   if (tapMode) return `This phone has no ${sensor} the app can read. Tap the ring to count each rep.`;
-  if (stalled) return 'No reps picked up yet. Check the phone is placed as shown at the start, or tap + to count.';
+  if (stalled) return 'No rep picked up for a while. Check the phone is placed as at the start, or tap + to count.';
   if (phase !== 'live') return ex.tip;
   return ex.sensor === 'proximity' ? 'Counting. Bring your nose close to the phone on every rep.' : 'Counting. Keep the phone steady against you.';
 };
