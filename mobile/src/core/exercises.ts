@@ -1,6 +1,9 @@
 /** The three challenge exercises: single source of truth for names, colors, sensor and placement tips. */
 export type ExerciseId = 'pushup' | 'situp' | 'squat';
 
+/** Reps done per exercise on one day. */
+export type Counts = Readonly<Record<ExerciseId, number>>;
+
 /** How reps are sensed: proximity edge (push-ups), torso tilt (sit-ups), vertical lift (squats). */
 export type Sensor = 'proximity' | 'tilt' | 'lift';
 
