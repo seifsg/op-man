@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
+import { useReduceMotion } from './useReduceMotion';
 
 type Props = {
   size: number;
@@ -12,7 +13,7 @@ type Props = {
   children?: ReactNode;
 };
 
-/** Eases a number toward `to` over `ms` (ease-out), one render per frame; same on every platform. */
+/** Eases a number toward `to` over `ms` (ease-out), one render per frame; `ms` 0 jumps straight there. */
 const useTween = (to: number, ms = 450): number => {
   const [value, setValue] = useState(to);
   const current = useRef(to);
@@ -21,7 +22,7 @@ const useTween = (to: number, ms = 450): number => {
     const start = performance.now();
     let id = 0;
     const step = (now: number) => {
-      const p = Math.min(1, (now - start) / ms);
+      const p = ms > 0 ? Math.min(1, (now - start) / ms) : 1;
       current.current = from + (to - from) * (1 - (1 - p) ** 3);
       setValue(current.current);
       if (p < 1) id = requestAnimationFrame(step);
@@ -36,7 +37,7 @@ const useTween = (to: number, ms = 450): number => {
 export function Ring({ size, stroke, progress, color, track, children }: Props) {
   const r = (size - stroke) / 2;
   const circumference = 2 * Math.PI * r;
-  const shown = useTween(Math.min(1, Math.max(0, progress)));
+  const shown = useTween(Math.min(1, Math.max(0, progress)), useReduceMotion() ? 0 : 450);
   const c = size / 2;
 
   return (

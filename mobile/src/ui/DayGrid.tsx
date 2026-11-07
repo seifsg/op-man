@@ -19,6 +19,7 @@ export function DayGrid({ cells, width, t }: { cells: readonly Cell[]; width: nu
   );
 }
 
+/** Fill or outline for one cell's state, from the theme. */
 const look = (c: Cell, t: Theme) => {
   switch (c) {
     case 'done':

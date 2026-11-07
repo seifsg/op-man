@@ -2,38 +2,41 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Exercise } from '../core/exercises.ts';
 import { Icon } from './Icon';
 import { Ring } from './Ring';
-import { label, numeral, type Theme } from './theme';
+import { label, numeral, tint, type Theme } from './theme';
 
-type Props = { ex: Exercise; done: number; goal: number; t: Theme; onPress: () => void };
+type Props = { ex: Exercise; done: number; goal: number; next: boolean; t: Theme; onPress: () => void };
 
-/** Today's card for one exercise: ring, done / target, tap to start a set. */
-export function ExerciseCard({ ex, done, goal, t, onPress }: Props) {
+/** Today's card for one exercise: ring, done / target, tap to start a set; the next one to do is outlined. */
+export function ExerciseCard({ ex, done, goal, next, t, onPress }: Props) {
   const complete = done >= goal;
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`${ex.name}: ${done} of ${goal}. Start a set`}
       onPress={onPress}
-      style={({ pressed }) => [styles.card, { backgroundColor: t.card, borderColor: t.line, opacity: pressed ? 0.75 : 1 }]}
+      style={({ pressed }) => [
+        styles.card,
+        { backgroundColor: t.card, borderColor: next ? ex.color : t.line, opacity: pressed ? 0.75 : 1 },
+      ]}
     >
-      <Ring size={64} stroke={7} progress={done / goal} color={ex.color} track={t.track}>
-        {complete ? <Icon name="check" color={ex.color} size={26} /> : <View style={[styles.dot, { backgroundColor: ex.color }]} />}
+      <Ring size={76} stroke={8} progress={done / goal} color={ex.color} track={t.track}>
+        {complete ? <Icon name="check" color={ex.color} size={28} /> : <View style={[styles.dot, { backgroundColor: ex.color }]} />}
       </Ring>
       <View style={styles.body}>
-        <Text style={[label, { color: ex.color }]}>{ex.name.toUpperCase()}</Text>
+        <Text style={[label, { color: tint(ex, t) }]}>{ex.name.toUpperCase()}</Text>
         <Text style={[numeral, styles.count, { color: t.text }]}>
           {done}
           <Text style={{ color: t.dim, fontWeight: '700' }}> / {goal}</Text>
         </Text>
       </View>
-      <Icon name="chevron" color={t.dim} />
+      <Icon name="chevron" color={next ? tint(ex, t) : t.dim} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 24, borderWidth: 1, gap: 16 },
+  card: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 24, borderWidth: 1.5, gap: 16 },
   body: { flex: 1, gap: 4 },
-  count: { fontSize: 30 },
-  dot: { width: 10, height: 10, borderRadius: 5 },
+  count: { fontSize: 32 },
+  dot: { width: 12, height: 12, borderRadius: 6 },
 });

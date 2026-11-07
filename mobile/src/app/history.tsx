@@ -1,31 +1,24 @@
 import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { EXERCISES, type Counts } from '../core/exercises.ts';
-import { DAYS, dayIndex, dayKey, dayState, streak, timeline } from '../core/plan.ts';
+import { EXERCISES } from '../core/exercises.ts';
+import { DAYS, dayOn, dayState, pastDays, streak, timeline, type DayRow } from '../core/plan.ts';
 import { useProgress } from '../data/progress';
+import { confirmRestart } from '../ui/confirmRestart';
 import { DayGrid } from '../ui/DayGrid';
 import { Icon } from '../ui/Icon';
 import { leave } from '../ui/leave';
-import { label, numeral, useTheme, type Theme } from '../ui/theme';
-import { confirmRestart } from '../ui/confirmRestart';
+import { label, numeral, tint, useTheme, type Theme } from '../ui/theme';
+import { useToday } from '../ui/useToday';
 
-type Row = { key: string; day: number; counts: Counts };
-
-/** History: the 100-day grid, the totals, and every day with reps, newest first. */
+/** History: the 100-day grid, the totals, and every challenge day so far (missed ones too), newest first. */
 export default function History() {
   const t = useTheme();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { start, days } = useProgress();
-  const today = dayKey(new Date());
+  const today = useToday();
   const cells = timeline(days, start, today);
-  const rows: Row[] = start
-    ? Object.keys(days)
-        .sort()
-        .reverse()
-        .map((key) => ({ key, day: dayIndex(start, key), counts: days[key]! }))
-        .filter((r) => r.day <= DAYS)
-    : [];
+  const rows = pastDays(days, start, today);
   const s = styles(t);
 
   return (
@@ -37,7 +30,7 @@ export default function History() {
       ListHeaderComponent={
         <View style={{ gap: 18, marginBottom: 8 }}>
           <View style={s.header}>
-            <Pressable accessibilityLabel="Back" hitSlop={12} onPress={leave}>
+            <Pressable accessibilityRole="button" accessibilityLabel="Back" hitSlop={14} onPress={leave}>
               <Icon name="back" color={t.text} />
             </Pressable>
             <Text style={[label, { color: t.text, letterSpacing: 4 }]}>HISTORY</Text>
@@ -46,27 +39,28 @@ export default function History() {
           <View style={s.stats}>
             <Stat value={cells.filter((c) => c === 'done').length} caption="DAYS DONE" t={t} />
             <Stat value={streak(days, start, today)} caption="STREAK" t={t} />
-            <Stat value={start ? Math.max(0, DAYS - dayIndex(start, today) + 1) : DAYS} caption="DAYS LEFT" t={t} />
+            <Stat value={Math.max(0, DAYS - dayOn(start, today) + 1)} caption="DAYS LEFT" t={t} />
           </View>
           <DayGrid cells={cells} width={width - 40} t={t} />
-          <Text style={[label, { color: t.dim, marginTop: 6 }]}>{rows.length ? 'EVERY DAY' : 'NO REPS YET. YOUR FIRST SET STARTS DAY 1.'}</Text>
-          {rows.length > 0 && (
+          {rows.length ? (
             <View style={s.legend}>
               {EXERCISES.map((ex) => (
                 <View key={ex.id} style={s.key}>
                   <View style={[s.dot, { backgroundColor: ex.color }]} />
-                  <Text style={{ color: t.dim, fontSize: 13, fontWeight: '700' }}>{ex.name}</Text>
+                  <Text style={{ color: t.dim, fontSize: 14, fontWeight: '700' }}>{ex.name}</Text>
                 </View>
               ))}
             </View>
+          ) : (
+            <Text style={[s.empty, { color: t.dim }]}>No reps yet. Finish day 1 to light the first square.</Text>
           )}
         </View>
       }
-      renderItem={({ item }) => <DayRow row={item} t={t} />}
+      renderItem={({ item }) => <Day row={item} today={item.key === today} t={t} />}
       ListFooterComponent={
         start ? (
-          <Pressable accessibilityRole="button" onPress={confirmRestart} style={s.restart}>
-            <Text style={{ color: t.dim, fontWeight: '700' }}>Start the challenge again</Text>
+          <Pressable accessibilityRole="button" onPress={confirmRestart} style={({ pressed }) => [s.restart, { opacity: pressed ? 0.7 : 1 }]}>
+            <Text style={{ color: t.text, fontWeight: '800' }}>Start the challenge again</Text>
           </Pressable>
         ) : undefined
       }
@@ -74,32 +68,34 @@ export default function History() {
   );
 }
 
+/** A big number with a small caption under it. */
 function Stat({ value, caption, t }: { value: number; caption: string; t: Theme }) {
   return (
     <View style={{ flex: 1, gap: 2 }}>
       <Text style={[numeral, { color: t.text, fontSize: 34 }]}>{value}</Text>
-      <Text style={[label, { color: t.dim, fontSize: 11 }]}>{caption}</Text>
+      <Text style={[label, { color: t.dim }]}>{caption}</Text>
     </View>
   );
 }
 
-/** One day: its number, date, the three counts in their colors, and done/partial/missed. */
-function DayRow({ row, t }: { row: Row; t: Theme }) {
+/** One day: its number and date, the three counts in their colors, and done / partial / missed (or today). */
+function Day({ row, today, t }: { row: DayRow; today: boolean; t: Theme }) {
   const state = dayState(row.counts, row.day);
+  const tag = today && state !== 'done' ? 'TODAY' : state.toUpperCase();
   return (
-    <View style={[rowStyle.box, { backgroundColor: t.card, borderColor: t.line }]}>
-      <View style={{ width: 74 }}>
+    <View style={[rowStyle.box, { backgroundColor: t.card, borderColor: today ? t.text : t.line }]}>
+      <View style={{ width: 78 }}>
         <Text style={[numeral, { color: t.text, fontSize: 18 }]}>Day {row.day}</Text>
         <Text style={{ color: t.dim, fontSize: 12 }}>{row.key}</Text>
       </View>
       <View style={rowStyle.counts}>
         {EXERCISES.map((ex) => (
-          <Text key={ex.id} style={[numeral, { color: ex.color, fontSize: 18 }]} accessibilityLabel={`${ex.name} ${row.counts[ex.id]}`}>
+          <Text key={ex.id} style={[numeral, { color: tint(ex, t), fontSize: 18 }]} accessibilityLabel={`${ex.name} ${row.counts[ex.id]}`}>
             {row.counts[ex.id]}
           </Text>
         ))}
       </View>
-      <Text style={[label, { color: state === 'done' ? t.accent : t.dim, fontSize: 11 }]}>{state.toUpperCase()}</Text>
+      <Text style={[label, { color: state === 'done' ? t.accent : t.dim }]}>{tag}</Text>
     </View>
   );
 }
@@ -112,10 +108,11 @@ const rowStyle = StyleSheet.create({
 const styles = (t: Theme) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: t.bg },
-    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 44 },
+    header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 48 },
     stats: { flexDirection: 'row' },
-    restart: { alignItems: 'center', padding: 20 },
-    legend: { flexDirection: 'row', gap: 16, marginTop: -6 },
+    restart: { alignItems: 'center', justifyContent: 'center', height: 52, marginTop: 12, borderRadius: 26, borderWidth: 1.5, borderColor: t.line },
+    legend: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
     key: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    dot: { width: 8, height: 8, borderRadius: 4 },
+    dot: { width: 10, height: 10, borderRadius: 5 },
+    empty: { fontSize: 15 },
   });

@@ -1,4 +1,4 @@
-import { EXERCISES, type Counts } from './exercises.ts';
+import { EXERCISES, ZERO, type Counts } from './exercises.ts';
 
 /** Challenge length in days. */
 export const DAYS = 100;
@@ -26,6 +26,12 @@ export const shiftKey = (key: string, n: number): string => new Date(utc(key) + 
 /** Challenge day number of `key`, day 1 being `start`; a clock set back before the start reads as day 1. */
 export const dayIndex = (start: string, key: string): number =>
   Math.max(1, Math.round((utc(key) - utc(start)) / MS_PER_DAY) + 1);
+
+/** Challenge day of `key`: day 1 before the first rep. May exceed DAYS once the challenge is over. */
+export const dayOn = (start: string | null, key: string): number => (start ? dayIndex(start, key) : 1);
+
+/** The target on day `key`, held at day 100's after the challenge ends. */
+export const goalOn = (start: string | null, key: string): number => target(Math.min(dayOn(start, key), DAYS));
 
 export type DayState = 'done' | 'partial' | 'missed';
 
@@ -63,4 +69,23 @@ export const timeline = (days: Readonly<Record<string, Counts>>, start: string |
     const state = dayState(days[shiftKey(first, i)], day);
     return day === now && state !== 'done' ? 'today' : state;
   });
+};
+
+/** One challenge day for the history list. */
+export type DayRow = { readonly key: string; readonly day: number; readonly counts: Counts };
+
+/** Every challenge day from day 1 to today (at most 100), newest first, missed days included. */
+export const pastDays = (days: Readonly<Record<string, Counts>>, start: string | null, today: string): DayRow[] => {
+  if (!start) return [];
+  const last = Math.min(dayIndex(start, today), DAYS);
+  return Array.from({ length: last }, (_, i) => {
+    const key = shiftKey(start, last - 1 - i);
+    return { key, day: last - i, counts: days[key] ?? ZERO };
+  });
+};
+
+/** The challenge is complete once day 100 is done, or day 100 has passed. */
+export const isOver = (days: Readonly<Record<string, Counts>>, start: string | null, today: string): boolean => {
+  const day = dayOn(start, today);
+  return day > DAYS || (day === DAYS && dayState(days[today], DAYS) === 'done');
 };

@@ -1,4 +1,4 @@
-import { EXERCISES, type Counts, type ExerciseId } from './exercises.ts';
+import { EXERCISES, ZERO, type Counts, type ExerciseId } from './exercises.ts';
 
 /**
  * Everything the app stores, schema v1: the challenge's first day and reps per local day.
@@ -12,8 +12,14 @@ export type Progress = {
 
 export const EMPTY: Progress = { v: 1, start: null, days: {} };
 
-const ZERO: Counts = { pushup: 0, situp: 0, squat: 0 };
 const DAY_KEY = /^\d{4}-\d{2}-\d{2}$/;
+
+/** A real calendar day as YYYY-MM-DD: the shape and the date must both hold (2026-02-30 fails). */
+const isDay = (k: unknown): k is string => {
+  if (typeof k !== 'string' || !DAY_KEY.test(k)) return false;
+  const ms = Date.parse(`${k}T00:00:00Z`);
+  return !Number.isNaN(ms) && new Date(ms).toISOString().startsWith(k);
+};
 
 const isRecord = (x: unknown): x is Record<string, unknown> => typeof x === 'object' && x !== null && !Array.isArray(x);
 const isCount = (n: unknown): boolean => Number.isInteger(n) && (n as number) >= 0;
@@ -26,8 +32,8 @@ const problem = (d: unknown): string | null => {
   if (!isRecord(days)) return 'days is not an object';
   const keys = Object.keys(days);
   if (start === null) return keys.length ? 'days saved without a start' : null;
-  if (typeof start !== 'string' || !DAY_KEY.test(start)) return 'bad start day';
-  const bad = keys.find((k) => !DAY_KEY.test(k) || k < start || !isCounts(days[k]));
+  if (!isDay(start)) return 'bad start day';
+  const bad = keys.find((k) => !isDay(k) || k < start || !isCounts(days[k]));
   return bad === undefined ? null : `bad day ${bad}`;
 };
 

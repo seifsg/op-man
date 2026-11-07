@@ -14,6 +14,7 @@ test('stored doc round-trips; missing is empty; malformed is rejected with a rea
     '{"v":1,"start":"2026-11-07","days":{"2026-11-06":{"pushup":1,"situp":0,"squat":0}}}',
     '{"v":1,"start":"2026-11-07","days":{"2026-11-07":{"pushup":-1,"situp":0,"squat":0}}}',
     '{"v":1,"start":"2026-11-07","days":{"2026-11-07":{"pushup":1.5,"situp":0,"squat":0}}}',
+    '{"v":1,"start":"2026-02-30","days":{"2026-02-30":{"pushup":1,"situp":0,"squat":0}}}',
   ]) {
     const { doc: d, error } = parseDoc(raw);
     assert.equal(d, EMPTY, raw);

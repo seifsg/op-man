@@ -1,10 +1,14 @@
 import { useColorScheme } from 'react-native';
+import type { Exercise } from '../core/exercises.ts';
 
 /** "Night Gym" palette: near-black by default, a light twin for daytime. Exercise colors live in core/exercises. */
 export type Theme = {
+  readonly light: boolean;
   readonly bg: string;
   readonly card: string;
   readonly text: string;
+  /** Body copy that must read from a distance (tips). */
+  readonly soft: string;
   readonly dim: string;
   readonly line: string;
   readonly track: string;
@@ -13,10 +17,12 @@ export type Theme = {
 };
 
 const dark: Theme = {
+  light: false,
   bg: '#0B0B0F',
   card: '#16161C',
   text: '#F5F5F7',
-  dim: '#8C8C99',
+  soft: '#C9C9D2',
+  dim: '#9A9AA6',
   line: '#24242D',
   track: '#22222A',
   accent: '#FF5A36',
@@ -24,10 +30,12 @@ const dark: Theme = {
 };
 
 const light: Theme = {
+  light: true,
   bg: '#F4F4F7',
   card: '#FFFFFF',
   text: '#0B0B0F',
-  dim: '#6A6A76',
+  soft: '#33333C',
+  dim: '#62626E',
   line: '#E3E3EA',
   track: '#E8E8EE',
   accent: '#F04A26',
@@ -35,6 +43,9 @@ const light: Theme = {
 };
 
 export const useTheme = (): Theme => (useColorScheme() === 'light' ? light : dark);
+
+/** The exercise color for text: the bright one on dark, its darker ink on light (WCAG AA). */
+export const tint = (ex: Exercise, t: Theme): string => (t.light ? ex.ink : ex.color);
 
 /** Heavy numerals that keep their width while counting. */
 export const numeral = { fontWeight: '900', fontVariant: ['tabular-nums'] } as const;
