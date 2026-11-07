@@ -1,0 +1,248 @@
+/* OP Man landing: "Night Gym" look from the app, with a light twin. */
+:root {
+  --bg: #0b0b0f;
+  --card: #16161c;
+  --line: #24242d;
+  --text: #f5f5f7;
+  --dim: #8c8c99;
+  --accent: #ff5a36;
+  --on-accent: #0b0b0f;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f4f4f7;
+    --card: #ffffff;
+    --line: #e3e3ea;
+    --text: #0b0b0f;
+    --dim: #6a6a76;
+    --accent: #f04a26;
+    --on-accent: #ffffff;
+    color-scheme: light;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.55 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+main {
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+a {
+  color: inherit;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.hero {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 16px;
+  padding: 72px 0 40px;
+}
+
+.logo {
+  border-radius: 22px;
+  box-shadow: 0 12px 40px rgb(255 90 54 / 0.25);
+}
+
+h1 {
+  font-size: clamp(48px, 9vw, 88px);
+  line-height: 1;
+}
+
+.pitch {
+  max-width: 560px;
+  text-wrap: balance;
+  margin: 0;
+  font-size: clamp(19px, 2.6vw, 23px);
+  color: var(--dim);
+}
+
+.pitch strong {
+  color: var(--text);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0 26px;
+  border-radius: 26px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-weight: 900;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+
+.button:hover {
+  transform: translateY(-2px);
+}
+
+.button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--line);
+}
+
+.note {
+  margin: 0;
+  font-size: 14px;
+  color: var(--dim);
+}
+
+.counter {
+  margin: 16px 0 0;
+  font-size: clamp(64px, 14vw, 132px);
+  font-weight: 900;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter small {
+  font-size: 0.32em;
+  color: var(--dim);
+  margin-left: 8px;
+}
+
+.shots {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  padding: 24px 0 56px;
+}
+
+.shots figure {
+  margin: 0;
+  text-align: center;
+}
+
+.shots img {
+  width: 100%;
+  height: auto;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: var(--card);
+}
+
+.shots figcaption {
+  margin-top: 10px;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.how,
+.plan {
+  padding: 24px 0 48px;
+}
+
+h2 {
+  font-size: clamp(30px, 4vw, 40px);
+  margin-bottom: 20px;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.cards article {
+  padding: 22px;
+  border-radius: 24px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--c);
+}
+
+.cards h3 {
+  color: var(--c);
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+
+.cards p,
+.plan li {
+  text-wrap: pretty;
+  margin: 0;
+  color: var(--dim);
+}
+
+.plan ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan li strong {
+  color: var(--text);
+}
+
+footer {
+  padding: 40px 16px 56px;
+  text-align: center;
+  color: var(--dim);
+  font-size: 15px;
+}
+
+@media (max-width: 720px) {
+  .hero {
+    padding-top: 48px;
+  }
+
+  .shots {
+    grid-template-columns: repeat(3, 72%);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    margin: 0 -16px;
+    padding: 24px 16px 48px;
+  }
+
+  .shots figure {
+    scroll-snap-align: center;
+  }
+
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .button {
+    transition: none;
+  }
+}

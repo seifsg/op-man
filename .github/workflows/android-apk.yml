@@ -1,0 +1,88 @@
+name: Android APK
+
+# Reusable: CI and release build the same APK. CI builds keep the template's debug signing (test artifacts);
+# release builds are re-signed with the owner's key from the ANDROID_KEYSTORE_* secrets, so nobody else can
+# ship an APK that installs over ours.
+on:
+  workflow_call:
+    inputs:
+      architectures:
+        description: ABIs to compile, comma separated
+        type: string
+        default: arm64-v8a,armeabi-v7a,x86_64
+      version:
+        description: Release tag (v1.2.3) to stamp as the app version; empty keeps app.json
+        type: string
+        default: ''
+      signed:
+        description: Re-sign with the release key (fails when its secrets are missing)
+        type: boolean
+        default: false
+    secrets:
+      ANDROID_KEYSTORE_BASE64:
+        required: false
+      ANDROID_KEYSTORE_PASSWORD:
+        required: false
+      ANDROID_KEY_ALIAS:
+        required: false
+      ANDROID_KEY_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+      - run: npm ci
+      # Android only installs updates with a higher versionCode: the run number always grows.
+      - name: Stamp the release version
+        if: inputs.version != ''
+        env:
+          VERSION: ${{ inputs.version }}
+          CODE: ${{ github.run_number }}
+        run: |
+          node -e "const f='app.json',fs=require('fs'),j=JSON.parse(fs.readFileSync(f));
+          j.expo.version=process.env.VERSION.replace(/^v/,''); j.expo.android.versionCode=+process.env.CODE;
+          fs.writeFileSync(f,JSON.stringify(j,null,2))"
+      - run: npx expo prebuild --platform android --no-install
+      - name: Build the release APK
+        working-directory: mobile/android
+        env:
+          ABIS: ${{ inputs.architectures }}
+        run: ./gradlew assembleRelease --no-daemon "-PreactNativeArchitectures=$ABIS"
+      - run: cp android/app/build/outputs/apk/release/app-release.apk op-man.apk
+      - name: Sign with the release key
+        if: inputs.signed
+        env:
+          KEYSTORE: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          [ -n "$KEYSTORE" ] || { echo "::error::Release signing needs the ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS and ANDROID_KEY_PASSWORD secrets"; exit 1; }
+          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/release.jks"
+          tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          "$tools/apksigner" sign --ks "$RUNNER_TEMP/release.jks" --ks-pass env:KS_PASS --ks-key-alias "$KEY_ALIAS" --key-pass env:KEY_PASS op-man.apk
+          "$tools/apksigner" verify op-man.apk
+          rm "$RUNNER_TEMP/release.jks"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: op-man-apk
+          path: mobile/op-man.apk
+          if-no-files-found: error

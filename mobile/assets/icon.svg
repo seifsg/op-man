@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- OP Man icon source: ember progress ring around a geometric "OP". Render with any SVG rasterizer. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="42%" r="60%">
+      <stop offset="0" stop-color="#2A1610"/>
+      <stop offset="1" stop-color="#0B0B0F"/>
+    </radialGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#glow)"/>
+  <g id="mark" fill="none" stroke-linecap="round">
+    <circle cx="512" cy="512" r="330" stroke="#22222A" stroke-width="64"/>
+    <circle cx="512" cy="512" r="330" stroke="#FF5A36" stroke-width="64"
+            stroke-dasharray="1762 2073" transform="rotate(-90 512 512)"/>
+    <circle cx="412" cy="512" r="104" stroke="#F5F5F7" stroke-width="58"/>
+    <path d="M596 616V408h70a74 74 0 0 1 0 148h-70" stroke="#F5F5F7" stroke-width="58" stroke-linejoin="round"/>
+  </g>
+</svg>

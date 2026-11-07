@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "OP Man",
+    "slug": "op-man",
+    "version": "1.0.0",
+    "scheme": "opman",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "ios": {
+      "bundleIdentifier": "dev.seif.opman",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "dev.seif.opman",
+      "adaptiveIcon": {
+        "backgroundColor": "#0B0B0F",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "OP Man reads motion to count your squats and sit-ups. Nothing leaves your phone."
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain",
+          "backgroundColor": "#0B0B0F"
+        }
+      ]
+    ],
+    "backgroundColor": "#0B0B0F"
+  }
+}

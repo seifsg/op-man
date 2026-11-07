@@ -1,0 +1,91 @@
+name: CI
+
+# Runs on every branch push; PR checks show the push run of the head commit. Tags go to release.yml.
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Types, core tests and the Android JS bundle for the app; the landing built exactly as its host does.
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            mobile/package-lock.json
+      - run: npm ci && npm run build
+      - run: npm ci && npm run check
+        working-directory: mobile
+
+  android:
+    uses: ./.github/workflows/android-apk.yml
+    with:
+      architectures: arm64-v8a,x86_64
+
+  e2e:
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/download-artifact@v8
+        with:
+          name: op-man-apk
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_7
+          disable-animations: true
+          script: bash mobile/scripts/e2e.sh op-man.apk shots
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: android-screens
+          path: shots/
+          if-no-files-found: error
+
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci
+      - run: npx expo prebuild --platform ios
+      - name: Build for the simulator (unsigned)
+        run: |
+          ws=$(ls -d ios/*.xcworkspace); scheme=$(basename "$ws" .xcworkspace)
+          xcodebuild -workspace "$ws" -scheme "$scheme" -configuration Release -sdk iphonesimulator \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO -quiet
+      - name: Launch on a simulator and screenshot
+        run: bash scripts/ios-shot.sh build/Build/Products/Release-iphonesimulator ../shots-ios
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ios-screens
+          path: shots-ios/
+          if-no-files-found: error
