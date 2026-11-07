@@ -13,6 +13,7 @@ const load = (): Progress => {
   if (error !== null) {
     console.error(`OP Man: saved progress unreadable (${error}); copied to ${KEY}.bad, starting fresh`);
     kv.set(`${KEY}.bad`, raw ?? '');
+    kv.set(KEY, JSON.stringify(doc));
   }
   return doc;
 };
