@@ -1,0 +1,9 @@
+{
+  "platforms": ["apple", "android"],
+  "apple": {
+    "modules": ["OpProximityModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.opproximity.OpProximityModule"]
+  }
+}

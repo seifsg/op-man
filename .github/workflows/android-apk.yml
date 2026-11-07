@@ -1,0 +1,40 @@
+name: Android APK
+
+# Reusable: CI and release build the same APK. Release builds are signed with the
+# template's fixed debug keystore, so every build installs over the previous one.
+on:
+  workflow_call:
+    inputs:
+      architectures:
+        description: ABIs to compile, comma separated
+        type: string
+        default: arm64-v8a,armeabi-v7a,x86_64
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v6
+      - run: npm ci
+      - run: npx expo prebuild --platform android --no-install
+      - run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=${{ inputs.architectures }}
+        working-directory: mobile/android
+      - run: cp android/app/build/outputs/apk/release/app-release.apk op-man.apk
+      - uses: actions/upload-artifact@v7
+        with:
+          name: op-man-apk
+          path: mobile/op-man.apk
+          if-no-files-found: error
