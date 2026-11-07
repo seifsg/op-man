@@ -1,8 +1,9 @@
 name: CI
 
-# Runs on every push (branches and main); PR checks show the push run of the head commit.
+# Runs on every branch push; PR checks show the push run of the head commit. Tags go to release.yml.
 on:
   push:
+    branches: ['**']
 
 concurrency:
   group: ci-${{ github.ref }}
