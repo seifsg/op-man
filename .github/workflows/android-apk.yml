@@ -9,6 +9,10 @@ on:
         description: ABIs to compile, comma separated
         type: string
         default: arm64-v8a,armeabi-v7a,x86_64
+      version:
+        description: Release tag (v1.2.3) to stamp as the app version; empty keeps app.json
+        type: string
+        default: ''
 
 jobs:
   apk:
@@ -29,6 +33,16 @@ jobs:
           java-version: 17
       - uses: gradle/actions/setup-gradle@v6
       - run: npm ci
+      # Android only installs updates with a higher versionCode: the run number always grows.
+      - name: Stamp the release version
+        if: inputs.version != ''
+        env:
+          VERSION: ${{ inputs.version }}
+          CODE: ${{ github.run_number }}
+        run: |
+          node -e "const f='app.json',fs=require('fs'),j=JSON.parse(fs.readFileSync(f));
+          j.expo.version=process.env.VERSION.replace(/^v/,''); j.expo.android.versionCode=+process.env.CODE;
+          fs.writeFileSync(f,JSON.stringify(j,null,2))"
       - run: npx expo prebuild --platform android --no-install
       - run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=${{ inputs.architectures }}
         working-directory: mobile/android
