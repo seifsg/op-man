@@ -1,0 +1,16 @@
+{
+  "name": "op-man-landing",
+  "private": true,
+  "description": "Landing page for OP Man: what it is, screenshots, APK download.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --port 5611",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 5611",
+    "check": "npm run build && npm --prefix mobile run check"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^8.3.6"
+  }
+}
