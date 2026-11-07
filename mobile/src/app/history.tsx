@@ -41,7 +41,7 @@ export default function History() {
             <Stat value={streak(days, start, today)} caption="STREAK" t={t} />
             <Stat value={Math.max(0, DAYS - dayOn(start, today) + 1)} caption="DAYS LEFT" t={t} />
           </View>
-          <DayGrid cells={cells} width={width - 40} t={t} />
+          <DayGrid cells={cells} today={Math.min(dayOn(start, today), DAYS) - 1} width={width - 40} t={t} />
           {rows.length ? (
             <View style={s.legend}>
               {EXERCISES.map((ex) => (

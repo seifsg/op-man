@@ -11,6 +11,8 @@ export type Theme = {
   readonly soft: string;
   readonly dim: string;
   readonly line: string;
+  /** Outline of ghost buttons: visible on the background, quieter than text. */
+  readonly edge: string;
   readonly track: string;
   readonly accent: string;
   readonly onAccent: string;
@@ -24,6 +26,7 @@ const dark: Theme = {
   soft: '#C9C9D2',
   dim: '#9A9AA6',
   line: '#24242D',
+  edge: '#3A3A46',
   track: '#22222A',
   accent: '#FF5A36',
   onAccent: '#0B0B0F',
@@ -37,6 +40,7 @@ const light: Theme = {
   soft: '#33333C',
   dim: '#62626E',
   line: '#E3E3EA',
+  edge: '#C4C4CE',
   track: '#E8E8EE',
   accent: '#F04A26',
   onAccent: '#FFFFFF',

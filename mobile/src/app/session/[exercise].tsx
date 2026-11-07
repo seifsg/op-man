@@ -100,7 +100,7 @@ function Session({ ex }: { ex: Exercise }) {
       <Text style={s.tip}>{tipText(ex, tapMode, phase, stalled)}</Text>
       <RepRing
         ex={ex}
-        size={Math.min(width - 24, height * 0.5, 440)}
+        size={Math.min(width - 32, height * 0.5, 440)}
         count={count}
         goal={goal}
         countdown={phase === 'countdown' ? seconds : null}

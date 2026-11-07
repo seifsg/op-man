@@ -38,8 +38,8 @@ test('streak counts done days back from today, or from yesterday while today is 
   assert.equal(streak({ ...days, '2026-11-05': all(10) }, '2026-11-04', '2026-11-07'), 1);
   assert.equal(streak(days, '2026-11-04', '2026-11-08'), 0);
   assert.equal(streak({}, null, '2026-11-07'), 0);
-  assert.deepEqual(timeline(days, '2026-11-04', '2026-11-07').slice(0, 5), ['done', 'done', 'done', 'today', 'ahead']);
-  assert.equal(timeline({}, null, '2026-11-07')[0], 'today');
+  assert.deepEqual(timeline(days, '2026-11-04', '2026-11-07').slice(0, 5), ['done', 'done', 'done', 'partial', 'ahead']);
+  assert.equal(timeline({}, null, '2026-11-07')[0], 'missed');
   assert.deepEqual(pastDays({ '2026-11-05': all(1) }, '2026-11-05', '2026-11-07').map((r) => [r.day, r.counts.pushup]), [[3, 0], [2, 0], [1, 1]]);
   assert.equal(isOver({}, '2026-07-30', '2026-11-06'), false);
   assert.equal(isOver({ '2026-11-06': all(100) }, '2026-07-30', '2026-11-06'), true);

@@ -67,6 +67,15 @@ export default function Home() {
             onPress={() => router.push({ pathname: '/session/[exercise]', params: { exercise: ex.id } })}
           />
         ))}
+      {!over && next && (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.push({ pathname: '/session/[exercise]', params: { exercise: next.id } })}
+          style={({ pressed }) => [s.primary, { backgroundColor: next.color, opacity: pressed ? 0.8 : 1 }]}
+        >
+          <Text style={[s.primaryText, { color: '#0B0B0F' }]}>Start {next.name.toLowerCase()}</Text>
+        </Pressable>
+      )}
 
       <Pressable
         accessibilityRole="button"

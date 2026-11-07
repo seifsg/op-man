@@ -113,7 +113,7 @@ function Step({ icon, label: a11y, onPress, t }: { icon: 'plus' | 'minus'; label
       accessibilityRole="button"
       accessibilityLabel={a11y}
       onPress={onPress}
-      style={({ pressed }) => [styles.step, { borderColor: t.line, opacity: pressed ? 0.6 : 1 }]}
+      style={({ pressed }) => [styles.step, { borderColor: t.edge, opacity: pressed ? 0.6 : 1 }]}
     >
       <Icon name={icon} color={t.text} size={26} />
     </Pressable>

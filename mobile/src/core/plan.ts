@@ -56,8 +56,8 @@ export const streak = (days: Readonly<Record<string, Counts>>, start: string | n
   return n;
 };
 
-/** How a challenge day looks on the grid: its state once past, today while open, or still ahead. */
-export type Cell = DayState | 'today' | 'ahead';
+/** How a challenge day looks on the grid: its state so far (today included), or still ahead. */
+export type Cell = DayState | 'ahead';
 
 /** All 100 challenge days in order, for the history grid. Before the first rep, today is day 1. */
 export const timeline = (days: Readonly<Record<string, Counts>>, start: string | null, today: string): Cell[] => {
@@ -66,8 +66,7 @@ export const timeline = (days: Readonly<Record<string, Counts>>, start: string |
   return Array.from({ length: DAYS }, (_, i) => {
     const day = i + 1;
     if (day > now) return 'ahead';
-    const state = dayState(days[shiftKey(first, i)], day);
-    return day === now && state !== 'done' ? 'today' : state;
+    return dayState(days[shiftKey(first, i)], day);
   });
 };
 
