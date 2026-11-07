@@ -69,8 +69,17 @@ test('squat counter ignores hand tremor, sway and sensor noise while standing st
   assert.equal(count(liftCounter(), 120, still), 0);
 });
 
+/** Sit-ups at constant speed: up to `deg` in 1 s, down in 1 s, 0.3 s rest, after 2.5 s still. */
+const steadySitups = (reps: number, deg: number) => (t: number): Vec3 => {
+  const s = t - 2.5;
+  const p = s > 0 && s < reps * 2.3 ? s % 2.3 : 2.3;
+  const th = ((p < 1 ? p : p < 2 ? 2 - p : 0) * deg * Math.PI) / 180;
+  return { x: 0, y: Math.sin(th), z: Math.cos(th) };
+};
+
 test('sit-ups count by torso tilt, any OS sign; small wobble does not count', () => {
   assert.equal(count(tiltCounter(), 40, situps(12, 80, 2.5)), 12);
+  assert.equal(count(tiltCounter(), 240, steadySitups(100, 60)), 100);
   assert.equal(count(tiltCounter(), 40, situps(8, 60, 4, -1)), 8);
   assert.equal(count(tiltCounter(), 40, situps(10, 15, 2)), 0);
 });

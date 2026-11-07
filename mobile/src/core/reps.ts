@@ -63,7 +63,8 @@ export const liftCounter = ({
  * Sit-ups, phone on the chest or in the hands: the torso tilts up, then back.
  * Angle between the smoothed gravity vector and the rest pose; a rep = above `up` degrees, then below `down`.
  * The rest pose is the pose held at the end of the first `calibrate` seconds (lying back for the countdown),
- * then follows slow drift only while lying back.
+ * then follows slow drift only while truly lying back (under half of `down`), so a rep's own rise and fall
+ * never drags it toward the tilt.
  */
 export const tiltCounter = ({
   up = 45,
@@ -90,7 +91,7 @@ export const tiltCounter = ({
     const angle = angleDeg(g, rest);
     if (angle > up) raised = true;
     else if (angle < down) {
-      rest = lerp(rest, g, dt / tauRest);
+      if (angle < down / 2) rest = lerp(rest, g, dt / tauRest);
       if (raised && t - last >= minGap) {
         raised = false;
         last = t;

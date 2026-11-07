@@ -29,8 +29,10 @@ const commit = (next: Progress): void => {
   listeners.forEach((l) => l());
 };
 
+/** The current saved progress (snapshot for useSyncExternalStore). */
 export const getProgress = (): Progress => state;
 
+/** Calls `listener` after every save; returns the unsubscribe function. */
 export const subscribe = (listener: () => void): (() => void) => {
   listeners.add(listener);
   return () => listeners.delete(listener);
