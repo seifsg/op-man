@@ -5,7 +5,8 @@ set -euo pipefail
 apk=$1 out=$2 pkg=dev.seif.opman
 mkdir -p "$out"
 
-shot() { sleep "${2:-1}"; adb exec-out screencap -p > "$out/$1.png"; }
+# Saves a screenshot after clearing any system "not responding" dialog (ui answers Wait).
+shot() { sleep "${2:-1}"; ui > /dev/null; adb exec-out screencap -p > "$out/$1.png"; }
 open() { adb shell am start -W -a android.intent.action.VIEW -d "opman://$1" "$pkg" > /dev/null; }
 
 # Center "x y" of the element showing text $2 in UI dump $1, or nothing.
@@ -63,9 +64,10 @@ situp() {
 }
 
 adb install -r "$apk"
-# Let the cold launcher settle, then dark mode: the app's Night Gym look.
-adb shell input keyevent KEYCODE_HOME
-sleep 20
+# The app is started directly, so the emulator's launcher is not needed; on a slow CI emulator it keeps
+# raising "Pixel Launcher isn't responding" over the app, so turn it off. Then dark mode: the Night Gym look.
+adb shell pm disable-user --user 0 com.google.android.apps.nexuslauncher > /dev/null || true
+sleep 5
 adb shell cmd uimode night yes
 near 10
 accel 0 9.81 0
